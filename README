@@ -1,0 +1,23 @@
+NAME
+
+    Mojolicious::Plugin::REST - Mojolicious Plugin for RESTful operations
+
+VERSION
+
+    version 0.001
+
+AUTHOR
+
+    Abhishek Shende <abhishekisnot@gmail.com>
+
+CONTRIBUTOR
+
+    Abhishek Shende <a.shende@contractor.verio.net>
+
+COPYRIGHT AND LICENSE
+
+    This software is copyright (c) 2014 by Abhishek Shende.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
