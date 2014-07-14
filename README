@@ -1,0 +1,197 @@
+NAME
+
+    Mojolicious::Plugin::REST - Mojolicious Plugin for RESTful operations
+
+VERSION
+
+    version 0.001
+
+SYNOPSIS
+
+            # In Mojolicious application
+            $self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
+            $self->routes->rest_routes( name => 'User' );
+            
+            # Installs following routes:
+        # +-------------+-----------------------+------------------------+
+        # | HTTP Method |          URL          |         Route          |
+        # +-------------+-----------------------+------------------------+
+        # | GET         | /api/v1/users         | User::read_all_users() |
+        # | POST        | /api/v1/users         | User::create_user()    |
+        # | GET         | /api/v1/users/:userid | User::read_user()      |
+        # | PUT         | /api/v1/users/:userid | User:update_user()     |
+        # | DELETE      | /api/v1/users/:userid | User:delete_user()     |
+        # +-------------+-----------------------+------------------------+ 
+
+DESCRIPTION
+
+    Mojolicious::Plugin::REST adds various helpers for REST
+    <http://en.wikipedia.org/wiki/Representational_state_transfer>ful CRUD
+    <http://en.wikipedia.org/wiki/Create,_read,_update_and_delete>
+    operations via HTTP to the app.
+
+    As much as possible, it tries to follow RESTful API Design
+    <https://blog.apigee.com/detail/restful_api_design> principles from
+    Apigee.
+
+    This module is inspired from Mojolicious::Plugin::RESTRoutes.
+
+MOJOLICIOUS HELPERS
+
+ rest_routes
+
+    rest_routes shourtcut can be used to easily add RESTful routes for a
+    resource. For example,
+
+            $routes->rest_routes( name => 'User' );
+            
+            # Installs following routes (if $r->namespaces == ['My::App']) :-
+            #+-------------+----------------+---------------------------------+
+            #| HTTP Method |      URL       |              Route              |
+            #+-------------+----------------+---------------------------------+
+            #| GET         | /users         | My::App::User::read_all_users() |
+            #| POST        | /users         | My::App::User::create_user()    |
+            #| GET         | /users/:userid | My::App::User::read_user()      |
+            #| PUT         | /users/:userid | My::App::User:update_user()     |
+            #| DELETE      | /users/:userid | My::App::User:delete_user()     |
+            #+-------------+----------------+---------------------------------+
+
+    The target controller has to implement the following methods:
+
+      * read_all_users
+
+      * create_user
+
+      * read_user
+
+      * update_user
+
+      * delete_user
+
+MOJOLICIOUS HOOKS
+
+    This module installs an before_render application hook, which gurantees
+    JSON output in non dev mode.
+
+OPTIONS
+
+    Following options can be used to control route creation:
+
+    name
+
+      The name of the resource, e.g. 'User'. This name will be used to
+      build the route URL as well as the controller name.
+
+    readonly
+
+      If true, no create, update or delete routes will be created.
+
+    controller
+
+      By default, resource name will be converted to CamelCase controller
+      name. You can change it by providing controller name.
+
+      If customized, this option needs a full namespace of the controller
+      class.
+
+    under
+
+      This option can be used for associations. For Example:
+
+          # Mojolicious
+          $self->routes->rest_routes( name => 'Feature', under => 'User' );
+          
+          # Installs following routes (if $r->namespaces == ['My::App']) :-
+              # +-------------+-------------------------------------------+-----------------------------------------+
+              # | HTTP Method |                    URL                    |                  Route                  |
+              # +-------------+-------------------------------------------+-----------------------------------------+
+              # | GET         | /api/v1/users/:userid/features            | My::App::User::read_all_user_features() |
+              # | POST        | /api/v1/users/:userid/features            | My::App::User::create_user_feature()    |
+              # | GET         | /api/v1/users/:userid/features/:featureid | My::App::User::read_user_feature()      |
+              # | PUT         | /api/v1/users/:userid/features/:featureid | My::App::User::update_user_feature()    |
+              # | DELETE      | /api/v1/users/:userid/features/:featureid | My::App::User::delete_user_feature()    |
+              # +-------------+-------------------------------------------+-----------------------------------------+
+
+PLUGIN OPTIONS
+
+    prefix
+
+      If present, this option will be added before every route created.
+      e.g.
+
+          # Mojolicious
+          $app->plugin(REST => { prefix => 'api' });
+      
+          # Installs following routes:
+              # +-------------+--------------------+---------------------------------+
+              # | HTTP Method |        URL         |              Route              |
+              # +-------------+--------------------+---------------------------------+
+              # | GET         | /api/users         | My::App::User::read_all_users() |
+              # | POST        | /api/users         | My::App::User::create_user()    |
+              # | GET         | /api/users/:userid | My::App::User::read_user()      |
+          # ...
+
+    version
+
+      If present, api version given will be added before every route
+      created (but after prefix). e.g.
+
+              # Mojolicious
+          $app->plugin(REST => { version => 'v1' });
+      
+          # Installs following routes:
+              # +-------------+-------------------+---------------------------------+
+              # | HTTP Method |        URL        |              Route              |
+              # +-------------+-------------------+---------------------------------+
+              # | GET         | /v1/users         | My::App::User::read_all_users() |
+              # | POST        | /v1/users         | My::App::User::create_user()    |
+              # | GET         | /v1/users/:userid | My::App::User::read_user()      |
+          # ...
+
+      And if both prefix and version are present
+
+          # Mojolicious
+          $app->plugin(REST => { prefix => 'api', version => 'v1' });
+      
+          # Installs following routes:
+              # +-------------+-----------------------+---------------------------------+
+              # | HTTP Method |          URL          |              Route              |
+              # +-------------+-----------------------+---------------------------------+
+              # | GET         | /api/v1/users         | My::App::User::read_all_users() |
+              # | POST        | /api/v1/users         | My::App::User::create_user()    |
+              # | GET         | /api/v1/users/:userid | My::App::User::read_user()      |
+          # ...
+
+    http2crud
+
+      If present, given HTTP to CRUD mapping will be used to determine
+      method names. Default mapping:
+
+              get     ->  read
+              post    ->  create
+              put     ->  update
+              delete  ->  delete
+              get_col ->  read_all  # deaviates over best practices, 
+                                    # but makes it simple to distinguish method names for
+                                    # single resource vs for collection
+
+AUTHOR
+
+    Abhishek Shende <abhishekisnot@gmail.com>
+
+COPYRIGHT AND LICENSE
+
+    This software is copyright (c) 2014 by Abhishek Shende.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
+POD ERRORS
+
+    Hey! The above document had some coding errors, which are explained
+    below:
+
+    Around line 188:
+
+      You forgot a '=back' before '=head1'
+

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<includepath>
+  <includepathentry path="/home/sigdev/workspace/Mojolicious-Plugin-REST/lib" />
+  <includepathentry path="/home/sigdev/perl5/lib/perl5" />
+</includepath>
+
