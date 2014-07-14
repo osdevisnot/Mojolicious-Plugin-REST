@@ -303,4 +303,6 @@ If present, given HTTP to CRUD mapping will be used to determine method names. D
 	                      # but makes it simple to distinguish method names for
 	                      # single resource vs for collection
 
+=back
+
 =cut
