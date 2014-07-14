@@ -3,14 +3,13 @@ package Mojolicious::Plugin::REST;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Exception;
 use Lingua::EN::Inflect 1.895 qw/PL/;
-use Mojo::Util qw(dumper);
 
 my $http2crud = {
-	get     => 'read',
-	post    => 'create',
-	put     => 'update',
-	delete  => 'delete',
-	get_col => 'read_all',
+	get    => 'read',
+	post   => 'create',
+	put    => 'update',
+	delete => 'delete',
+	list   => 'list',
 };
 
 sub register {
@@ -25,9 +24,9 @@ sub register {
 	$app->hook(
 		before_render => sub {
 			my $c = shift;
-			return unless $c->app->mode ne 'development';
+
 			my $json = $c->stash('json');
-			$app->log->debug( "Got json " . dumper($json) );
+
 			unless ( defined $json->{data} ) {
 				$json->{data} = {};
 				$c->stash( 'json' => $json );
@@ -84,7 +83,7 @@ sub register {
 			}
 
 			# GET resource collection
-			$destination = $options->{http2crud}->{get_col} . $separator . $name_plural;
+			$destination = $options->{http2crud}->{list} . $separator . $name_plural;
 			$resource->get->to( '#' . $destination )->name($destination);
 
 			# POST to resource collection
@@ -124,7 +123,9 @@ sub register {
 }
 
 1;
+
 __END__
+
 =head1 SYNOPSIS
 	
 	# In Mojolicious application
@@ -135,7 +136,7 @@ __END__
     # +-------------+-----------------------+------------------------+
     # | HTTP Method |          URL          |         Route          |
     # +-------------+-----------------------+------------------------+
-    # | GET         | /api/v1/users         | User::read_all_users() |
+    # | GET         | /api/v1/users         | User::list_users()     |
     # | POST        | /api/v1/users         | User::create_user()    |
     # | GET         | /api/v1/users/:userid | User::read_user()      |
     # | PUT         | /api/v1/users/:userid | User:update_user()     |
@@ -144,10 +145,13 @@ __END__
 	
 =head1 DESCRIPTION
 
-Mojolicious::Plugin::REST adds various helpers for L<REST|http://en.wikipedia.org/wiki/Representational_state_transfer>ful
-L<CRUD|http://en.wikipedia.org/wiki/Create,_read,_update_and_delete> operations via HTTP to the app.
+L<Mojolicious::Plugin::REST> adds various helpers for L<REST|http://en.wikipedia.org/wiki/Representational_state_transfer>ful
+L<CRUD|http://en.wikipedia.org/wiki/Create,_read,_update_and_delete> operations via
+L<HTTP|http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol> to the app.
 
 As much as possible, it tries to follow L<RESTful API Design|https://blog.apigee.com/detail/restful_api_design> principles from Apigee.
+
+Used in conjuction with L<Mojolicious::Controller::REST>, this module makes building RESTful application a breeze. 
 
 This module is inspired from L<Mojolicious::Plugin::RESTRoutes>.
 
@@ -163,7 +167,7 @@ rest_routes shourtcut can be used to easily add RESTful routes for a resource. F
 	#+-------------+----------------+---------------------------------+
 	#| HTTP Method |      URL       |              Route              |
 	#+-------------+----------------+---------------------------------+
-	#| GET         | /users         | My::App::User::read_all_users() |
+	#| GET         | /users         | My::App::User::list_users()     |
 	#| POST        | /users         | My::App::User::create_user()    |
 	#| GET         | /users/:userid | My::App::User::read_user()      |
 	#| PUT         | /users/:userid | My::App::User:update_user()     |
@@ -176,7 +180,7 @@ The target controller has to implement the following methods:
  
 =item *
  
-read_all_users
+list_users
  
 =item *
  
@@ -198,7 +202,7 @@ delete_user
 
 =head1 MOJOLICIOUS HOOKS
 
-This module installs an before_render application hook, which gurantees JSON output in non dev mode.
+This module installs an before_render application hook, which gurantees JSON output.
 
 =head1 OPTIONS
 
@@ -232,7 +236,7 @@ This option can be used for associations. For Example:
 	# +-------------+-------------------------------------------+-----------------------------------------+
 	# | HTTP Method |                    URL                    |                  Route                  |
 	# +-------------+-------------------------------------------+-----------------------------------------+
-	# | GET         | /api/v1/users/:userid/features            | My::App::User::read_all_user_features() |
+	# | GET         | /api/v1/users/:userid/features            | My::App::User::list_user_features()     |
 	# | POST        | /api/v1/users/:userid/features            | My::App::User::create_user_feature()    |
 	# | GET         | /api/v1/users/:userid/features/:featureid | My::App::User::read_user_feature()      |
 	# | PUT         | /api/v1/users/:userid/features/:featureid | My::App::User::update_user_feature()    |
@@ -256,7 +260,7 @@ If present, this option will be added before every route created. e.g.
 	# +-------------+--------------------+---------------------------------+
 	# | HTTP Method |        URL         |              Route              |
 	# +-------------+--------------------+---------------------------------+
-	# | GET         | /api/users         | My::App::User::read_all_users() |
+	# | GET         | /api/users         | My::App::User::list_users()     |
 	# | POST        | /api/users         | My::App::User::create_user()    |
 	# | GET         | /api/users/:userid | My::App::User::read_user()      |
     # ...
@@ -272,7 +276,7 @@ If present, api version given will be added before every route created (but afte
 	# +-------------+-------------------+---------------------------------+
 	# | HTTP Method |        URL        |              Route              |
 	# +-------------+-------------------+---------------------------------+
-	# | GET         | /v1/users         | My::App::User::read_all_users() |
+	# | GET         | /v1/users         | My::App::User::list_users()     |
 	# | POST        | /v1/users         | My::App::User::create_user()    |
 	# | GET         | /v1/users/:userid | My::App::User::read_user()      |
     # ...
@@ -286,7 +290,7 @@ And if both prefix and version are present
 	# +-------------+-----------------------+---------------------------------+
 	# | HTTP Method |          URL          |              Route              |
 	# +-------------+-----------------------+---------------------------------+
-	# | GET         | /api/v1/users         | My::App::User::read_all_users() |
+	# | GET         | /api/v1/users         | My::App::User::list_users()     |
 	# | POST        | /api/v1/users         | My::App::User::create_user()    |
 	# | GET         | /api/v1/users/:userid | My::App::User::read_user()      |
     # ...
@@ -299,9 +303,7 @@ If present, given HTTP to CRUD mapping will be used to determine method names. D
 	post    ->  create
 	put     ->  update
 	delete  ->  delete
-	get_col ->  read_all  # deaviates over best practices, 
-	                      # but makes it simple to distinguish method names for
-	                      # single resource vs for collection
+	list    ->  list
 
 =back
 
