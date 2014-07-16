@@ -4,24 +4,54 @@ NAME
 
 VERSION
 
-    version 0.002
+    version 0.003
 
 SYNOPSIS
 
             # In Mojolicious application
             $self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
-            $self->routes->rest_routes( name => 'User' );
+            
+            $self->routes->rest_routes( name => 'Account' );
             
             # Installs following routes:
-        # +-------------+-----------------------+------------------------+
-        # | HTTP Method |          URL          |         Route          |
-        # +-------------+-----------------------+------------------------+
-        # | GET         | /api/v1/users         | User::list_users()     |
-        # | POST        | /api/v1/users         | User::create_user()    |
-        # | GET         | /api/v1/users/:userid | User::read_user()      |
-        # | PUT         | /api/v1/users/:userid | User:update_user()     |
-        # | DELETE      | /api/v1/users/:userid | User:delete_user()     |
-        # +-------------+-----------------------+------------------------+ 
+        # +-------------+-----------------------------+-------------------------+
+            # | HTTP Method |             URL             |          Route          |
+            # +-------------+-----------------------------+-------------------------+
+            # | GET         | /api/v1/accounts            | Account::list_accounts  |
+            # | POST        | /api/v1/accounts            | Account::create_account |
+            # | GET         | /api/v1/accounts/:accountId | Account::read_account   |
+            # | PUT         | /api/v1/accounts/:accountId | Account::update_account |
+            # | DELETE      | /api/v1/accounts/:accountId | Account::delete_account |
+            # +-------------+-----------------------------+-------------------------+
+            
+            $routes->rest_routes( name => 'Feature', under => 'Account' );
+            
+            # Installs following routes:
+            # +-------------+-------------------------------------------------+---------------------------------+
+            # | HTTP Method |                       URL                       |              Route              |
+            # +-------------+-------------------------------------------------+---------------------------------+
+            # | GET         | /api/v1/accounts/:accountId/features            | Feature::list_account_features  |
+            # | POST        | /api/v1/accounts/:accountId/features            | Feature::create_account_feature |
+            # | GET         | /api/v1/accounts/:accountId/features/:featureId | Feature::read_account_feature   |
+            # | PUT         | /api/v1/accounts/:accountId/features/:featureId | Feature::update_account_feature |
+            # | DELETE      | /api/v1/accounts/:accountId/features/:featureId | Feature::delete_account_feature |
+            # +-------------+-------------------------------------------------+---------------------------------+
+            
+            $routes->rest_routes( name => 'Product', under => 'Account', types => [qw(FTP SSH)] );
+            
+            # Installs following routes:    
+            # +-------------+------------------------------------------+--------------------------------------+
+            # | HTTP Method |                   URL                    |                Route                 |
+            # +-------------+------------------------------------------+--------------------------------------+
+            # | GET         | /api/v1/accounts/:accountId/products     | Product::list_account_products       |
+            # | POST        | /api/v1/accounts/:accountId/products     | Product::create_account_product      |
+            # | GET         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::read_account_product   |
+            # | PUT         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::update_account_product |
+            # | DELETE      | /api/v1/accounts/:accountId/products/FTP | Product::FTP::delete_account_product |
+            # | GET         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::read_account_product   |
+            # | PUT         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::update_account_product |
+            # | DELETE      | /api/v1/accounts/:accountId/products/SSH | Product::SSH::delete_account_product |
+            # +-------------+------------------------------------------+--------------------------------------+
 
 DESCRIPTION
 
@@ -44,38 +74,13 @@ MOJOLICIOUS HELPERS
 
  rest_routes
 
-    rest_routes shourtcut can be used to easily add RESTful routes for a
-    resource. For example,
-
-            $routes->rest_routes( name => 'User' );
-            
-            # Installs following routes (if $r->namespaces == ['My::App']) :-
-            #+-------------+----------------+---------------------------------+
-            #| HTTP Method |      URL       |              Route              |
-            #+-------------+----------------+---------------------------------+
-            #| GET         | /users         | My::App::User::list_users()     |
-            #| POST        | /users         | My::App::User::create_user()    |
-            #| GET         | /users/:userid | My::App::User::read_user()      |
-            #| PUT         | /users/:userid | My::App::User:update_user()     |
-            #| DELETE      | /users/:userid | My::App::User:delete_user()     |
-            #+-------------+----------------+---------------------------------+
-
-    The target controller has to implement the following methods:
-
-      * list_users
-
-      * create_user
-
-      * read_user
-
-      * update_user
-
-      * delete_user
+    A routes shourtcut to easily add RESTful routes for a resource.
 
 MOJOLICIOUS HOOKS
 
     This module installs an before_render application hook, which gurantees
-    JSON output.
+    JSON output. Refer Mojolicious::Controller::REST documentation for
+    output format.
 
 OPTIONS
 
@@ -100,71 +105,23 @@ OPTIONS
 
     under
 
-      This option can be used for associations. For Example:
+      This option can be used for associations.
 
-          # Mojolicious
-          $self->routes->rest_routes( name => 'Feature', under => 'User' );
-          
-          # Installs following routes (if $r->namespaces == ['My::App']) :-
-              # +-------------+-------------------------------------------+-----------------------------------------+
-              # | HTTP Method |                    URL                    |                  Route                  |
-              # +-------------+-------------------------------------------+-----------------------------------------+
-              # | GET         | /api/v1/users/:userid/features            | My::App::User::list_user_features()     |
-              # | POST        | /api/v1/users/:userid/features            | My::App::User::create_user_feature()    |
-              # | GET         | /api/v1/users/:userid/features/:featureid | My::App::User::read_user_feature()      |
-              # | PUT         | /api/v1/users/:userid/features/:featureid | My::App::User::update_user_feature()    |
-              # | DELETE      | /api/v1/users/:userid/features/:featureid | My::App::User::delete_user_feature()    |
-              # +-------------+-------------------------------------------+-----------------------------------------+
+    types
+
+      This option can be used to specify types of resources available in
+      application.
 
 PLUGIN OPTIONS
 
     prefix
 
       If present, this option will be added before every route created.
-      e.g.
-
-          # Mojolicious
-          $app->plugin(REST => { prefix => 'api' });
-      
-          # Installs following routes:
-              # +-------------+--------------------+---------------------------------+
-              # | HTTP Method |        URL         |              Route              |
-              # +-------------+--------------------+---------------------------------+
-              # | GET         | /api/users         | My::App::User::list_users()     |
-              # | POST        | /api/users         | My::App::User::create_user()    |
-              # | GET         | /api/users/:userid | My::App::User::read_user()      |
-          # ...
 
     version
 
       If present, api version given will be added before every route
-      created (but after prefix). e.g.
-
-              # Mojolicious
-          $app->plugin(REST => { version => 'v1' });
-      
-          # Installs following routes:
-              # +-------------+-------------------+---------------------------------+
-              # | HTTP Method |        URL        |              Route              |
-              # +-------------+-------------------+---------------------------------+
-              # | GET         | /v1/users         | My::App::User::list_users()     |
-              # | POST        | /v1/users         | My::App::User::create_user()    |
-              # | GET         | /v1/users/:userid | My::App::User::read_user()      |
-          # ...
-
-      And if both prefix and version are present
-
-          # Mojolicious
-          $app->plugin(REST => { prefix => 'api', version => 'v1' });
-      
-          # Installs following routes:
-              # +-------------+-----------------------+---------------------------------+
-              # | HTTP Method |          URL          |              Route              |
-              # +-------------+-----------------------+---------------------------------+
-              # | GET         | /api/v1/users         | My::App::User::list_users()     |
-              # | POST        | /api/v1/users         | My::App::User::create_user()    |
-              # | GET         | /api/v1/users/:userid | My::App::User::read_user()      |
-          # ...
+      created (but after prefix).
 
     http2crud
 
