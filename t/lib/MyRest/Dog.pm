@@ -13,17 +13,17 @@ sub create_dog {
 
 sub read_dog {
 	my $self = shift;
-	$self->render( json => { data => { id => $self->stash('dogid'), name => 'bo' } } );
+	$self->render( json => { data => { id => $self->stash('dogId'), name => 'bo' } } );
 }
 
 sub update_dog {
 	my $self = shift;
-	$self->render( json => { data => { id => $self->stash('dogid'), name => $self->req->json->{name} } } );
+	$self->render( json => { data => { id => $self->stash('dogId'), name => $self->req->json->{name} } } );
 }
 
 sub delete_dog {
 	my $self = shift;
-	$self->render( json => { data => { id => $self->stash('dogid'), name => 'bo' } } );
+	$self->render( json => { data => { id => $self->stash('dogId'), name => 'bo' } } );
 }
 
 1;
