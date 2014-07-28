@@ -5,224 +5,291 @@ use Mojo::Exception;
 use Lingua::EN::Inflect 1.895 qw/PL/;
 
 my $http2crud = {
-	get    => 'read',
-	post   => 'create',
-	put    => 'update',
-	delete => 'delete',
-	list   => 'list',
+	collection => {
+		get  => 'list',
+		post => 'create',
+	},
+
+	resource => {
+		get    => 'read',
+		put    => 'update',
+		delete => 'delete'
+	},
 };
+
+has install_hook => 1;
 
 sub register {
 	my $self    = shift;
 	my $app     = shift;
 	my $options = { @_ ? ( ref $_[0] ? %{ $_[0] } : @_ ) : () };
 
-	foreach my $method ( keys %$http2crud ) {
-		$options->{http2crud}->{$method} = $http2crud->{$method} unless exists $options->{http2crud}->{$method};
-	}
+	$self->install_hook(0) if ( defined( $options->{hook} ) and $options->{hook} == 0 );
 
-	$app->hook(
-		before_render => sub {
-			my $c = shift;
-
-			my $json = $c->stash('json');
-
-			unless ( defined $json->{data} ) {
-				$json->{data} = {};
-				$c->stash( 'json' => $json );
-			}
-			unless ( defined $json->{messages} ) {
-				$json->{messages} = [];
-				$c->stash( 'json' => $json );
+	if ( exists( $options->{http2crud} ) ) {
+		foreach my $method_type ( keys( %{$http2crud} ) ) {
+			next unless exists $options->{http2crud}->{$method_type};
+			foreach my $method ( keys( %{ $http2crud->{$method_type} } ) ) {
+				next unless exists $options->{http2crud}->{$method_type}->{$method};
+				$http2crud->{$method_type}->{$method} = $options->{http2crud}->{$method_type}->{$method};
 			}
 		}
-	);
+	}
+
+	if ( $self->install_hook ) {
+		$app->hook(
+			before_render => sub {
+				my $c    = shift;
+				my $json = $c->stash('json');
+				unless ( defined $json->{data} ) {
+					$json->{data} = {};
+					$c->stash( 'json' => $json );
+				}
+			}
+		);
+	}
 
 	$app->routes->add_shortcut(
 		rest_routes => sub {
+
 			my $routes = shift;
+
 			my $params = { @_ ? ( ref $_[0] ? %{ $_[0] } : @_ ) : () };
 
-			Mojo::Exception->throw('Route name is required in rest_routes') unless defined $params->{name};
+			Mojo::Exception->throw('Route name is required in rest_routes')
+				unless defined $params->{name};
 
-			my ( $destination, $route_prefix, $separator, $under_lower, $under_plural, $under_id, $resource ) = ( '', '', '_' );
-			##
-			my $name        = $params->{name};
-			my $name_lower  = lc $name;
-			my $name_plural = PL( $name_lower, 10 );
-			my $route_id    = ":" . $name_lower . "Id";
-			#
-			my $under = $params->{under};
-			if ( defined($under) ) {
-				$under_lower  = lc $under;
-				$under_plural = PL( $under_lower, 10 );
-				$under_id     = ":" . $under_lower . "Id";
-				$separator    = "_" . $under_lower . "_";
+			# name setting
+			my $route_name = $params->{name};
+			my ( $route_name_lower, $route_name_plural, $route_id );
+			$route_name_lower  = lc $route_name;
+			$route_name_plural = PL( $route_name_lower, 10 );
+			$route_id          = ":" . $route_name_lower . "Id";
+
+			# under setting
+			my $under_name = $params->{under};
+			my ( $under_name_lower, $under_name_plural, $under_id );
+			if ( defined($under_name) and $under_name ne '' ) {
+				$under_name_lower  = lc $under_name;
+				$under_name_plural = PL( $under_name_lower, 10 );
+				$under_id          = ":" . $under_name_lower . "Id";
 			}
 
-			#
-			my $readonly = $params->{readonly} // 0;
-			#
+			# controller
+			my $controller = $params->{controller} // ucfirst($route_name_lower);
+
+			# prefix, version, stuff...
+			my $url_prefix = '';
 			foreach my $modifier (qw(prefix version)) {
-				if ( defined $options->{$modifier} && $options->{prefix} ne '' ) {
-					$route_prefix .= "/" . $options->{$modifier};
+				if ( defined $options->{$modifier} && $options->{$modifier} ne '' ) {
+					$url_prefix .= "/" . $options->{$modifier};
 				}
 			}
-			##
-			my $controller = $params->{controller} // "$name#";
 
-			# Install routes for resource collection #
-			if ( defined($under) ) {
-				$resource = $routes->route("$route_prefix/$under_plural/$under_id/$name_plural")->to($controller)->name("$under_lower$name_plural");
-			}
-			else {
-				$resource = $routes->route("$route_prefix/$name_plural")->to($controller)->name($name_plural);
-			}
+			foreach my $collection_method ( sort keys( %{ $http2crud->{collection} } ) ) {
+				next
+					if ( defined $params->{methods}
+					&& index( $params->{methods}, substr( $http2crud->{collection}->{$collection_method}, 0, 1 ) ) == -1 );
 
-			# GET resource collection
-			$destination = $options->{http2crud}->{list} . $separator . $name_plural;
-			$resource->get->to( '#' . $destination )->name($destination);
-
-			# POST to resource collection
-			if ( !$readonly ) {
-				$destination = $options->{http2crud}->{post} . $separator . $name_lower;
-				$resource->post->to( '#' . $destination )->name($destination);
-			}
-
-			# Install routes for single resource #
-			my $ids = [];
-			if ( defined( $params->{types} ) ) {
-				$ids = $params->{types};
-			}
-			else {
-				push @$ids, ":" . $name_lower . "Id";
-			}
-
-			foreach my $route_id (@$ids) {
-				if ( defined( $params->{types} ) ) {
-					$controller = $params->{controller} // $name . '::' . ucfirst($route_id) . "#";
+				my $url           = "/$route_name_plural";
+				my $action_suffix = "_" . $route_name_lower;
+				if ( defined($under_name) ) {
+					$url           = "/$under_name_plural/$under_id" . $url;
+					$action_suffix = "_" . $under_name_lower . $action_suffix;
 				}
-				if ( defined($under) ) {
-					$resource = $routes->route( "$route_prefix/$under_plural/$under_id/$name_plural/$route_id", "$route_id" => qr/\d+/ )
-						->to( $controller, idname => "$route_id" )->name("$under_lower$name_lower");
+
+				$url = $url_prefix . $url;
+				my $action = $http2crud->{collection}->{$collection_method} . $action_suffix;
+
+				if ( defined($under_name) ) {
+					my $bridge_controller = ucfirst($under_name_lower);
+					my $bridge
+						= $routes->bridge($url)->to( controller => $bridge_controller, action => 'chained' )->name("${bridge_controller}::chained()")
+						->route->via($collection_method)->to( controller => $controller, action => $action )->name("${controller}::${action}()");
 				}
 				else {
-					$resource = $routes->route( "$route_prefix/$name_plural/$route_id", "$route_id" => qr/\d+/ )->to( $controller, idname => "$route_id" )->name("$name_lower");
-				}
+					$routes->route($url)->via($collection_method)->to( controller => $controller, action => $action )
+						->name("${controller}::${action}()");
 
-				# GET a single resource
-				$destination = $options->{http2crud}->{get} . $separator . $name_lower;
-				$resource->get->to( '#' . $destination )->name($destination);
-				
-				if ( !$readonly ) {
-
-					# PUT requests - updates a resource
-					$destination = $options->{http2crud}->{put} . $separator . $name_lower;
-					$resource->put->to( '#' . $destination )->name($destination);
-
-					# DELETE requests - updates a resource
-					$destination = $options->{http2crud}->{delete} . $separator . $name_lower;
-					$resource->delete->to( '#' . $destination )->name($destination);
 				}
 
 			}
+			foreach my $resource_method ( sort keys( %{ $http2crud->{resource} } ) ) {
+				next
+					if ( defined $params->{methods}
+					&& index( $params->{methods}, substr( $http2crud->{resource}->{$resource_method}, 0, 1 ) ) == -1 );
+
+				my $ids = [];
+
+				if ( defined( $params->{types} ) ) {
+					$ids = $params->{types};
+				}
+				else {
+					push @$ids, $route_id;
+				}
+
+				foreach my $id (@$ids) {
+					if ( defined( $params->{types} ) ) {
+						$controller = $params->{controller} // ucfirst($route_name_lower);
+						$controller .= '::' . ucfirst($id);
+					}
+
+					my $url           = "/$route_name_plural/$id";
+					my $action_suffix = "_" . $route_name_lower;
+					if ( defined($under_name) ) {
+						$url           = "/$under_name_plural/$under_id" . $url;
+						$action_suffix = "_" . $under_name_lower . $action_suffix;
+					}
+					$url = $url_prefix . $url;
+					my $action = $http2crud->{resource}->{$resource_method} . $action_suffix;
+
+					if ( defined($under_name) ) {
+						my $bridge_controller = ucfirst($under_name_lower);
+						my $bridge
+							= $routes->bridge($url)->to( controller => $bridge_controller, action => 'chained' )
+							->name("${bridge_controller}::chained()")
+							->route->via($resource_method)->to( controller => $controller, action => $action )->name("${controller}::${action}()");
+
+					}
+					else {
+						$routes->route($url)->via($resource_method)->to( controller => $controller, action => $action )
+							->name("${controller}::${action}()");
+					}
+
+				}
+
+			}
+
 		}
 	);
+
 }
 
 1;
 
 __END__
 
+=pod
+
 =head1 SYNOPSIS
+
+	# In Mojolicious Application
+	$self->plugin( 'REST' => { prefix => 'api', version => 'v1' } );
 	
-	# In Mojolicious application
-	$self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
-	
-	$self->routes->rest_routes( name => 'Account' );
+	$routes->rest_routes( name => 'Account' );
 	
 	# Installs following routes:
-    # +-------------+-----------------------------+-------------------------+
-	# | HTTP Method |             URL             |          Route          |
-	# +-------------+-----------------------------+-------------------------+
-	# | GET         | /api/v1/accounts            | Account::list_accounts  |
-	# | POST        | /api/v1/accounts            | Account::create_account |
-	# | GET         | /api/v1/accounts/:accountId | Account::read_account   |
-	# | PUT         | /api/v1/accounts/:accountId | Account::update_account |
-	# | DELETE      | /api/v1/accounts/:accountId | Account::delete_account |
-	# +-------------+-----------------------------+-------------------------+
+	
+	# /api/v1/accounts             ....  GET     "Account::list_account()"    ^/api/v1/accounts(?:\.([^/]+)$)?
+	# /api/v1/accounts             ....  POST    "Account::create_account()"  ^/api/v1/accounts(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId  ....  DELETE  "Account::delete_account()"  ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId  ....  GET     "Account::read_account()"    ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId  ....  PUT     "Account::update_account()"  ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
+	
 	
 	$routes->rest_routes( name => 'Feature', under => 'Account' );
 	
 	# Installs following routes:
-	# +-------------+-------------------------------------------------+---------------------------------+
-	# | HTTP Method |                       URL                       |              Route              |
-	# +-------------+-------------------------------------------------+---------------------------------+
-	# | GET         | /api/v1/accounts/:accountId/features            | Feature::list_account_features  |
-	# | POST        | /api/v1/accounts/:accountId/features            | Feature::create_account_feature |
-	# | GET         | /api/v1/accounts/:accountId/features/:featureId | Feature::read_account_feature   |
-	# | PUT         | /api/v1/accounts/:accountId/features/:featureId | Feature::update_account_feature |
-	# | DELETE      | /api/v1/accounts/:accountId/features/:featureId | Feature::delete_account_feature |
-	# +-------------+-------------------------------------------------+---------------------------------+
 	
-	$routes->rest_routes( name => 'Product', under => 'Account', types => [qw(FTP SSH)] );
-	
-	# Installs following routes:	
-	# +-------------+------------------------------------------+--------------------------------------+
-	# | HTTP Method |                   URL                    |                Route                 |
-	# +-------------+------------------------------------------+--------------------------------------+
-	# | GET         | /api/v1/accounts/:accountId/products     | Product::list_account_products       |
-	# | POST        | /api/v1/accounts/:accountId/products     | Product::create_account_product      |
-	# | GET         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::read_account_product   |
-	# | PUT         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::update_account_product |
-	# | DELETE      | /api/v1/accounts/:accountId/products/FTP | Product::FTP::delete_account_product |
-	# | GET         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::read_account_product   |
-	# | PUT         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::update_account_product |
-	# | DELETE      | /api/v1/accounts/:accountId/products/SSH | Product::SSH::delete_account_product |
-	# +-------------+------------------------------------------+--------------------------------------+
+	# /api/v1/accounts/:accountId/features             B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features
+	#   +/                                             ....  GET     "Feature::list_account_feature()"    ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/features             B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features
+	#   +/                                             ....  POST    "Feature::create_account_feature()"  ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/features/:featureId  B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features/([^\/\.]+)
+	#   +/                                             ....  DELETE  "Feature::delete_account_feature()"  ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/features/:featureId  B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features/([^\/\.]+)
+	#   +/                                             ....  GET     "Feature::read_account_feature()"    ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/features/:featureId  B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features/([^\/\.]+)
+	#   +/                                             ....  PUT     "Feature::update_account_feature()"  ^(?:\.([^/]+)$)?
 	
 	
+	$routes->rest_routes( name => 'Product', under => 'Account', types => [qw(ftp ssh)] );
+	
+	# Installs following routes:
+	
+	# /api/v1/accounts/:accountId/products      B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products
+	#   +/                                      ....  GET     "Product::list_account_product()"         ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products      B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products
+	#   +/                                      ....  POST    "Product::create_account_product()"       ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ftp  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ftp
+	#   +/                                      ....  DELETE  "Product::Ftp::delete_account_product()"  ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ssh  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ssh
+	#   +/                                      ....  DELETE  "Product::Ssh::delete_account_product()"  ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ftp  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ftp
+	#   +/                                      ....  GET     "Product::Ftp::read_account_product()"    ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ssh  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ssh
+	#   +/                                      ....  GET     "Product::Ssh::read_account_product()"    ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ftp  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ftp
+	#   +/                                      ....  PUT     "Product::Ftp::update_account_product()"  ^(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId/products/ssh  B...  *       "Account::chained()"                      ^/api/v1/accounts/([^\/\.]+)/products/ssh
+	#   +/                                      ....  PUT     "Product::Ssh::update_account_product()"  ^(?:\.([^/]+)$)?
+    
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::REST> adds various helpers for L<REST|http://en.wikipedia.org/wiki/Representational_state_transfer>ful
 L<CRUD|http://en.wikipedia.org/wiki/Create,_read,_update_and_delete> operations via
-L<HTTP|http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol> to the app.
-
+L<HTTP|http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol> to your mojolicious application.
+ 
 As much as possible, it tries to follow L<RESTful API Design|https://blog.apigee.com/detail/restful_api_design> principles from Apigee.
-
-Used in conjuction with L<Mojolicious::Controller::REST>, this module makes building RESTful application a breeze. 
-
+ 
+Used in conjuction with L<Mojolicious::Controller::REST>, this module makes building RESTful application a breeze.
+ 
 This module is inspired from L<Mojolicious::Plugin::RESTRoutes>.
+
+=head1 WARNING
+
+This module is still under development, and it's possible that things may change between releases without warning or deprecations.
 
 =head1 MOJOLICIOUS HELPERS
 
 =head2 rest_routes
 
-A routes shourtcut to easily add RESTful routes for a resource.
+A routes shourtcut to easily add RESTful routes for a resource and associations.
 
 =head1 MOJOLICIOUS HOOKS
+ 
+This module installs an before_render application hook, which gurantees JSON output. 
 
-This module installs an before_render application hook, which gurantees JSON output. Refer L<Mojolicious::Controller::REST> documentation for output format.
+Refer L<Mojolicious::Controller::REST> documentation for output format.
+
+Hook installation can be disabled by passing hook => 0 in plugin options. For Example: 
+
+	$self->plugin( 'REST', prefix => 'api', version => 'v1', hook => 0 );
 
 =head1 OPTIONS
-
+ 
 Following options can be used to control route creation:
 
 =over
 
+=item methods
+
+This option can be used to control which methods are created for declared rest_route. Each character in the value of this option, 
+determined if corresponding route will be created or ommited. For Example:
+
+	$routes->rest_routes( name => 'Account', methods => 'crudl' );	# will install all the rest routes, value 'crudl' signifies, 
+	# c - create, r - read, u - update, d - delete, l - list.
+	
+	$routes->rest_routes( name => 'Account', methods => 'cl' ); # value 'cl' signifies, c - create, l - list
+	# will install only create and list routes as below:
+	# /api/v1/accounts  ....  GET   "Account::list_account()"    ^/api/v1/accounts(?:\.([^/]+)$)?
+	# /api/v1/accounts  ....  POST  "Account::create_account()"  ^/api/v1/accounts(?:\.([^/]+)$)?
+	
+	$routes->rest_routes( name => 'Account', methods => 'crd' ); # value 'crd' signifies, c - create, r - read, d - delete
+	# will install onle create, read and delete routes as below:
+	# /api/v1/accounts             ....  POST    "Account::create_account()"  ^/api/v1/accounts(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId  ....  DELETE  "Account::delete_account()"  ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
+	# /api/v1/accounts/:accountId  ....  GET     "Account::read_account()"    ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
+
 =item name
 
-The name of the resource, e.g. 'User'. This name will be used to build the route URL as well as the controller name.
-
-=item readonly
-
-If true, no create, update or delete routes will be created.
+The name of the resource, e.g. 'User'. This name will be used to build the route url as well as the controller name.
 
 =item controller
 
 By default, resource name will be converted to CamelCase controller name. You can change it by providing controller name.
 
-If customized, this option needs a full namespace of the controller class.
+If customized, this options needs a full namespace of the controller class.
 
 =item under
 
@@ -240,22 +307,27 @@ This option can be used to specify types of resources available in application.
 
 =item prefix
 
-If present, this option will be added before every route created. 
+If present, this value will be added as prefix to all routes created.
 
 =item version
 
-If present, api version given will be added before every route created (but after prefix).
+If present, this value will be added as prefix to all routes created but after prefix.
 
-=item http2crud
+=item htt2crud
 
 If present, given HTTP to CRUD mapping will be used to determine method names. Default mapping:
 
-	get     ->  read
-	post    ->  create
-	put     ->  update
-	delete  ->  delete
-	list    ->  list
-
-=back
-
-=cut
+	{
+		collection => {
+			get  => 'list',
+			post => 'create',
+		},
+		
+		resource => {
+			get    => 'read',
+			put    => 'update',
+			delete => 'delete'
+		}
+	}
+	
+	

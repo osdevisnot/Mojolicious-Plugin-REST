@@ -14,7 +14,7 @@ my $t = Test::Mojo->new('MyRest');
 $t->get_ok('/api/v1/dogs')->status_is(200)->json_is( { data => [ { id => 1, name => 'bo' }, { id => 2, name => 'boo' } ] } );
 
 # post request to collection responds with item just added...
-$t->post_ok( '/api/v1/dogs' => json => { id => 3, name => 'bu' } )->status_is(200)->json_is( { data => { id => 3, name => 'bu' }, messages => [] } );
+$t->post_ok( '/api/v1/dogs' => json => { id => 3, name => 'bu' } )->status_is(200)->json_is( { data => { id => 3, name => 'bu' } } );
 
 # get request to indiviaul item returns that item...
 $t->get_ok('/api/v1/dogs/1')->status_is(200)->json_is( { data => { id => 1, name => 'bo' } } );

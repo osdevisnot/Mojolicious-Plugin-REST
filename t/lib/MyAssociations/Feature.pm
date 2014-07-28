@@ -1,7 +1,7 @@
 package MyAssociations::Feature;
 use Mojo::Base 'Mojolicious::Controller';
 
-sub list_user_features {
+sub list_user_feature {
 	my $self = shift;
 	$self->render( json => { data => [ { id => 1, name => 'mysql' }, { id => 2, name => 'mails' } ] } );
 }
