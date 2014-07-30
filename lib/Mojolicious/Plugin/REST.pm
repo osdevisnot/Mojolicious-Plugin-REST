@@ -4,6 +4,8 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Exception;
 use Lingua::EN::Inflect 1.895 qw/PL/;
 
+our $version = '0.003';
+
 my $http2crud = {
 	get    => 'read',
 	post   => 'create',
