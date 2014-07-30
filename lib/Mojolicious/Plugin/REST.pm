@@ -18,35 +18,34 @@ sub register {
 	my $self    = shift;
 	my $app     = shift;
 	my $options = { @_ ? ( ref $_[0] ? %{ $_[0] } : @_ ) : () };
-  my $route_prefix = '';
+	my $route_prefix = '';
   
-  foreach my $modifier (qw(prefix version)) {
+	foreach my $modifier (qw(prefix version)) {
 		if ( defined $options->{$modifier} && $options->{prefix} ne '' ) {
 			$route_prefix .= "/" . $options->{$modifier};
 		}
 	}
 	
-  foreach my $method ( keys %$http2crud ) {
+	foreach my $method ( keys %$http2crud ) {
 		$options->{http2crud}->{$method} = $http2crud->{$method} unless exists $options->{http2crud}->{$method};
 	}
 
 	$app->hook(
 		before_render => sub {
 			my $c = shift;
-      my $path_substr = substr "".$c->req->url->path, 0, length $route_prefix;
-      if ($path_substr eq $route_prefix) {
-        #$c->app->log->info("match_ok");
-        my $json = $c->stash('json');
+			my $path_substr = substr "".$c->req->url->path, 0, length $route_prefix;
+			if ($path_substr eq $route_prefix) {
+				my $json = $c->stash('json');
 
-			  unless ( defined $json->{data} ) {
-				  $json->{data} = {};
-				  $c->stash( 'json' => $json );
-			  } 
-			  unless ( defined $json->{messages} ) {
-				  $json->{messages} = [];
-				  $c->stash( 'json' => $json );
-			  }
-      }
+				unless ( defined $json->{data} ) {
+					$json->{data} = {};
+					$c->stash( 'json' => $json );
+				} 
+				unless ( defined $json->{messages} ) {
+					$json->{messages} = [];
+					$c->stash( 'json' => $json );
+				}
+			}
 		}
 	);
 
