@@ -4,6 +4,8 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Exception;
 use Lingua::EN::Inflect 1.895 qw/PL/;
 
+our $VERSION = '0.003';
+
 my $http2crud = {
 	get    => 'read',
 	post   => 'create',
@@ -16,7 +18,14 @@ sub register {
 	my $self    = shift;
 	my $app     = shift;
 	my $options = { @_ ? ( ref $_[0] ? %{ $_[0] } : @_ ) : () };
-
+	my $route_prefix = '';
+  
+	foreach my $modifier (qw(prefix version)) {
+		if ( defined $options->{$modifier} && $options->{prefix} ne '' ) {
+			$route_prefix .= "/" . $options->{$modifier};
+		}
+	}
+	
 	foreach my $method ( keys %$http2crud ) {
 		$options->{http2crud}->{$method} = $http2crud->{$method} unless exists $options->{http2crud}->{$method};
 	}
@@ -24,16 +33,18 @@ sub register {
 	$app->hook(
 		before_render => sub {
 			my $c = shift;
+			my $path_substr = substr "".$c->req->url->path, 0, length $route_prefix;
+			if ($path_substr eq $route_prefix) {
+				my $json = $c->stash('json');
 
-			my $json = $c->stash('json');
-
-			unless ( defined $json->{data} ) {
-				$json->{data} = {};
-				$c->stash( 'json' => $json );
-			}
-			unless ( defined $json->{messages} ) {
-				$json->{messages} = [];
-				$c->stash( 'json' => $json );
+				unless ( defined $json->{data} ) {
+					$json->{data} = {};
+					$c->stash( 'json' => $json );
+				} 
+				unless ( defined $json->{messages} ) {
+					$json->{messages} = [];
+					$c->stash( 'json' => $json );
+				}
 			}
 		}
 	);
@@ -45,7 +56,7 @@ sub register {
 
 			Mojo::Exception->throw('Route name is required in rest_routes') unless defined $params->{name};
 
-			my ( $destination, $route_prefix, $separator, $under_lower, $under_plural, $under_id, $resource ) = ( '', '', '_' );
+			my ( $destination, $separator, $under_lower, $under_plural, $under_id, $resource ) = ( '', '_' );
 			##
 			my $name        = $params->{name};
 			my $name_lower  = lc $name;
@@ -62,12 +73,6 @@ sub register {
 
 			#
 			my $readonly = $params->{readonly} // 0;
-			#
-			foreach my $modifier (qw(prefix version)) {
-				if ( defined $options->{$modifier} && $options->{prefix} ne '' ) {
-					$route_prefix .= "/" . $options->{$modifier};
-				}
-			}
 			##
 			my $controller = $params->{controller} // "$name#";
 

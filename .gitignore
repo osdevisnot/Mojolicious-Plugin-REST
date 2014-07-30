@@ -1,2 +1,6 @@
 .project
 Mojolicious-Plugin-REST*
+MYMETA.*
+Makefile
+blib/
+pm_to_blib
