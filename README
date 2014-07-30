@@ -4,15 +4,15 @@ NAME
 
 VERSION
 
-    version 0.003
+    version 0.004
 
 SYNOPSIS
 
         # In Mojolicious application
         $self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
-        
+    
         $self->routes->rest_routes( name => 'Account' );
-        
+    
         # Installs following routes:
         # +-------------+-----------------------------+-------------------------+
         # | HTTP Method |             URL             |          Route          |
@@ -23,9 +23,9 @@ SYNOPSIS
         # | PUT         | /api/v1/accounts/:accountId | Account::update_account |
         # | DELETE      | /api/v1/accounts/:accountId | Account::delete_account |
         # +-------------+-----------------------------+-------------------------+
-        
+    
         $routes->rest_routes( name => 'Feature', under => 'Account' );
-        
+    
         # Installs following routes:
         # +-------------+-------------------------------------------------+---------------------------------+
         # | HTTP Method |                       URL                       |              Route              |
@@ -36,10 +36,10 @@ SYNOPSIS
         # | PUT         | /api/v1/accounts/:accountId/features/:featureId | Feature::update_account_feature |
         # | DELETE      | /api/v1/accounts/:accountId/features/:featureId | Feature::delete_account_feature |
         # +-------------+-------------------------------------------------+---------------------------------+
-        
+    
         $routes->rest_routes( name => 'Product', under => 'Account', types => [qw(FTP SSH)] );
-        
-        # Installs following routes:    
+    
+        # Installs following routes:
         # +-------------+------------------------------------------+--------------------------------------+
         # | HTTP Method |                   URL                    |                Route                 |
         # +-------------+------------------------------------------+--------------------------------------+
@@ -138,9 +138,11 @@ AUTHOR
 
     Abhishek Shende <abhishekisnot@gmail.com>
 
-CONTRIBUTOR
+CONTRIBUTORS
 
-    Vincent HETRU <vincent.hetru@13pass.com>
+      * Abhishek Shende <a.shende@contractor.verio.net>
+
+      * Vincent HETRU <vincent.hetru@13pass.com>
 
 COPYRIGHT AND LICENSE
 

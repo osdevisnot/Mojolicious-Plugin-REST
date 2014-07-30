@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     "Lingua::EN::Inflect" => "1.895",
     "Mojolicious" => "1.0"
   },
-  "VERSION" => "0.003",
+  "VERSION" => "0.004",
   "test" => {
     "TESTS" => "t/*.t"
   }
