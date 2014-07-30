@@ -1,0 +1,209 @@
+==================================================
+Changes from 2013-07-30 00:00:00 +0000 to present.
+==================================================
+
+------------------------------------------
+version 0.006 at 2014-07-30 22:10:02 +0000
+------------------------------------------
+
+  Change: 323623a7ccaea37ab8a7655e694961131cad8fd5
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 18:02:27 +0000
+
+    readme in markdown format for github 
+
+  Change: 298f379ef197ecec7b9695de1b4f3767da9fc94b
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 17:48:54 +0000
+
+    pod changes 
+
+  Change: b459f08b979dc246e453252c545326cdd5300eba
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 17:33:58 +0000
+
+    fixed failing tests, bumped version 
+
+  Change: 022566a11784d2c50ef045d1dd0b19c6f1a1c7e7
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 17:18:32 +0000
+
+    simplified route creation code 
+
+  Change: 05c10d5471e261a37fe4485d78b7ecebc552cdce
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 17:18:08 +0000
+
+    formatting changes 
+
+  Change: 06ca741e90040cf98cd174f115cd11704a78b04b
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 14:09:41 +0000
+
+    post release files 
+
+  Change: ff30b507bd0f97f1e098eb953a28ba7c55b7b78f
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 14:09:02 +0000
+
+    bump version to 0.005 
+
+  Change: cd651cf3b874186bc99c70a44f8e1ebc97c8a944
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 14:08:27 +0000
+
+    added mailmap to fix multiple email addresses in contributors 
+
+  Change: f66263d9a0d89deca7d5c31aafc41379ed4b4ab6
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 13:59:16 +0000
+
+    released version 0.004 
+
+  Change: 2ac8a1384032ae713451ecde7e949a9b1c39fe3f
+  Author: Abhishek Shende <a.shende@contractor.verio.net>
+  Date : 2014-07-30 13:58:07 +0000
+
+    dzil plugin changes + added makefile in repo for cpanm installation +
+    included .editorconfig for correct code formatting for contributions
+    + formating change 
+
+  Change: b551ca2b7c54abbb7f06cb815a14fea50eb79480
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-30 13:16:44 +0000
+
+    Merge pull request #1 from 13pass/master
+
+    Limiting the before_render treatment to rest request only 
+
+  Change: b7a8bcb6f3144d5f1eb13ab6402db25fb10f29b3
+  Author: Vincent HETRU <vincent.hetru@13pass.com>
+  Date : 2014-07-30 18:14:45 +0000
+
+    some code formating 
+
+  Change: cdd3c2154f41aa95750c0d8c726f894018f7aed5
+  Author: Vincent HETRU <vincent.hetru@13pass.com>
+  Date : 2014-07-30 18:03:37 +0000
+
+    Limiting the before_render treatment to rest request only 
+
+  Change: 9e0b9aa4c42688e06694d3a402f26a62b97f338b
+  Author: Vincent HETRU <vincent.hetru@13pass.com>
+  Date : 2014-07-30 18:00:56 +0000
+
+    Added a Makefile generator Makefile.PL 
+
+  Change: da9b3013267b274b95dac8ae06b6da6ebb6ad589
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-16 13:46:22 +0000
+
+    prepare release to cpan 
+
+  Change: 1fcf671e78a85187b72da72f224051e37fc68470
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-16 13:45:30 +0000
+
+    Merge branch 'release/v3'
+
+    Conflicts:
+
+    README 
+
+  Change: 11b8cf3837d48d9d1e03f99acf8a58fdc7e8ac49
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-16 13:43:49 +0000
+
+    bump version 
+
+  Change: 3cab5c5f5351dc800619f83c64359a05f629babd
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-16 13:42:37 +0000
+
+    improved functionality 
+
+  Change: 7cb6d4e5fa73f3edeb3d8d240ae034fa7a863ed8
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-15 14:32:51 +0000
+
+    updated readme and dist.ini on develop 
+
+  Change: f6cc88b5f5f05e53a904bbf99af71afd20c15d23
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 15:47:00 +0000
+
+    Change version in README 
+
+  Change: 144024d05e97b8ed763372c70228493f452600a8
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 15:25:02 +0000
+
+    Merge tag 'v2' into develop
+
+    Release 2 
+
+  Change: fe66517ea1a7511f2fba02fd0e593e3564632ab9
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 15:24:52 +0000
+
+    Merge branch 'release/v2' 
+
+  Change: 0d9f8739429cc17c1dcadd005b16fc201b640ac2
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 15:24:13 +0000
+
+    bump version 
+
+  Change: e028aa62cd671c51e32f842afb8be246e795eb43
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 15:23:37 +0000
+
+    Added tests, improved documentation 
+
+  Change: a3501f8b28a847c389641ba04304f8595d514c42
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 12:17:50 +0000
+
+    fix pod error 
+
+  Change: 38cc9420d01a33119426cbf1b1e5d6c78e3bbfe6
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 12:11:35 +0000
+
+    updated dist.ini for cpan upload 
+
+  Change: d5b4134b4304ec176b1451bf5ffbd563f7ee6970
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 12:10:04 +0000
+
+    Merge tag 'V1' into develop
+
+    Version 1 
+
+  Change: 844e07c12d676f928b41c48978314d121bea1c90
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 12:09:51 +0000
+
+    Merge branch 'release/V1' 
+
+  Change: daaf74cf417b53e761506e7b34df089f9f931e87
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-14 12:09:18 +0000
+
+    First release version 
+
+  Change: 9bf65f1fe7e392e8728cf61c5909afa590fe7ca7
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-11 13:15:49 +0000
+
+    Initial commit 
+
+  Change: 71a9f507bb0f584542eb8fd1a783062b8a219040
+  Author: Abhishek Shende <abhishekisnot@gmail.com>
+  Date : 2014-07-11 13:15:31 +0000
+
+    Initial commit 
+
+================
+End of releases.
+================
