@@ -1,7 +1,7 @@
 package MyRest::Dog;
 use Mojo::Base 'Mojolicious::Controller::REST';
 
-sub list_dogs {
+sub list_dog {
     my $self = shift;
     $self->render( json => { data => [ { id => 1, name => 'bo' }, { id => 2, name => 'boo' } ] } );
 }
