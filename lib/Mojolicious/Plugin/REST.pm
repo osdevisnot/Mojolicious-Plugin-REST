@@ -276,17 +276,17 @@ Following options can be used to control route creation:
 =item methods
 
 This option can be used to control which methods are created for declared rest_route. Each character in the value of this option,
-determined if corresponding route will be created or ommited. For Example:
+determines if corresponding route will be created or ommited. For Example:
 
     $routes->rest_routes( name => 'Account', methods => 'crudl' );
 
-This will install all the rest routes, value 'crudl' signifies:
+This will install all the rest routes, value C<crudl> signifies:
 
     c - create
     r - read
     u - update
     d - delete
-    l - list.
+    l - list
 
 Only methods whose first character is mentioned in the value for this option will be created. For Example:
 
@@ -299,7 +299,8 @@ This will install only create, read and delete routes as below:
     # /api/v1/accounts/:accountId  ....  GET     "Account::read_account()"    ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
 
 
-option value 'crd' signifies,
+Option value C<crd> signifies:
+
     c - create,
     r - read,
     d - delete
@@ -326,11 +327,11 @@ If customized, this options needs a full namespace of the controller class.
 =item under
 
 This option can be used for associations. If present, url's for named resource will be created under given under resource. The actions created,
-will be bridged under 'method_chained' method of given under resouce. For Example:
+will be bridged under C<method_chained> method of given under resouce. For Example:
 
     $routes->rest_routes( name => 'Feature', under => 'Account' );
 
-    # will create following routes, where routes for feature are bridged under Account::chained()
+This will create following routes, where routes for feature are bridged under C<Account::chained()>
 
     # /api/v1/accounts/:accountId/features             B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features
     #   +/                                             ....  GET     "Feature::list_account_feature()"    ^(?:\.([^/]+)$)?
