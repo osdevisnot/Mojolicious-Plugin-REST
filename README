@@ -4,7 +4,7 @@ NAME
 
 VERSION
 
-    version 0.004
+    version 0.005
 
 SYNOPSIS
 
@@ -138,11 +138,9 @@ AUTHOR
 
     Abhishek Shende <abhishekisnot@gmail.com>
 
-CONTRIBUTORS
+CONTRIBUTOR
 
-      * Abhishek Shende <a.shende@contractor.verio.net>
-
-      * Vincent HETRU <vincent.hetru@13pass.com>
+    Vincent HETRU <vincent.hetru@13pass.com>
 
 COPYRIGHT AND LICENSE
 
