@@ -11,7 +11,7 @@ $t->get_ok('/api/v1/users/1/features')->status_is(200)->json_is( { data => [ { i
 
 # post request to collection returns added item
 $t->post_ok( '/api/v1/users/1/features' => json => { id => 3, name => 'newfeature' } )->status_is(200)
-	->json_is( { data => { id => 3, name => 'newfeature' } } );
+    ->json_is( { data => { id => 3, name => 'newfeature' } } );
 
 # get request to individual item returns that item
 $t->get_ok('/api/v1/users/1/features/1')->status_is(200)->json_is( { data => { id => 1, features => [ { id => 'mysql' }, { id => 'mails' } ] } } );

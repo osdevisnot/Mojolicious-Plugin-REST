@@ -8,50 +8,50 @@ VERSION
 
 SYNOPSIS
 
-            # In Mojolicious application
-            $self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
-            
-            $self->routes->rest_routes( name => 'Account' );
-            
-            # Installs following routes:
+        # In Mojolicious application
+        $self->plugin( 'REST', { prefix => 'api', version => 'v1', } );
+        
+        $self->routes->rest_routes( name => 'Account' );
+        
+        # Installs following routes:
         # +-------------+-----------------------------+-------------------------+
-            # | HTTP Method |             URL             |          Route          |
-            # +-------------+-----------------------------+-------------------------+
-            # | GET         | /api/v1/accounts            | Account::list_accounts  |
-            # | POST        | /api/v1/accounts            | Account::create_account |
-            # | GET         | /api/v1/accounts/:accountId | Account::read_account   |
-            # | PUT         | /api/v1/accounts/:accountId | Account::update_account |
-            # | DELETE      | /api/v1/accounts/:accountId | Account::delete_account |
-            # +-------------+-----------------------------+-------------------------+
-            
-            $routes->rest_routes( name => 'Feature', under => 'Account' );
-            
-            # Installs following routes:
-            # +-------------+-------------------------------------------------+---------------------------------+
-            # | HTTP Method |                       URL                       |              Route              |
-            # +-------------+-------------------------------------------------+---------------------------------+
-            # | GET         | /api/v1/accounts/:accountId/features            | Feature::list_account_features  |
-            # | POST        | /api/v1/accounts/:accountId/features            | Feature::create_account_feature |
-            # | GET         | /api/v1/accounts/:accountId/features/:featureId | Feature::read_account_feature   |
-            # | PUT         | /api/v1/accounts/:accountId/features/:featureId | Feature::update_account_feature |
-            # | DELETE      | /api/v1/accounts/:accountId/features/:featureId | Feature::delete_account_feature |
-            # +-------------+-------------------------------------------------+---------------------------------+
-            
-            $routes->rest_routes( name => 'Product', under => 'Account', types => [qw(FTP SSH)] );
-            
-            # Installs following routes:    
-            # +-------------+------------------------------------------+--------------------------------------+
-            # | HTTP Method |                   URL                    |                Route                 |
-            # +-------------+------------------------------------------+--------------------------------------+
-            # | GET         | /api/v1/accounts/:accountId/products     | Product::list_account_products       |
-            # | POST        | /api/v1/accounts/:accountId/products     | Product::create_account_product      |
-            # | GET         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::read_account_product   |
-            # | PUT         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::update_account_product |
-            # | DELETE      | /api/v1/accounts/:accountId/products/FTP | Product::FTP::delete_account_product |
-            # | GET         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::read_account_product   |
-            # | PUT         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::update_account_product |
-            # | DELETE      | /api/v1/accounts/:accountId/products/SSH | Product::SSH::delete_account_product |
-            # +-------------+------------------------------------------+--------------------------------------+
+        # | HTTP Method |             URL             |          Route          |
+        # +-------------+-----------------------------+-------------------------+
+        # | GET         | /api/v1/accounts            | Account::list_accounts  |
+        # | POST        | /api/v1/accounts            | Account::create_account |
+        # | GET         | /api/v1/accounts/:accountId | Account::read_account   |
+        # | PUT         | /api/v1/accounts/:accountId | Account::update_account |
+        # | DELETE      | /api/v1/accounts/:accountId | Account::delete_account |
+        # +-------------+-----------------------------+-------------------------+
+        
+        $routes->rest_routes( name => 'Feature', under => 'Account' );
+        
+        # Installs following routes:
+        # +-------------+-------------------------------------------------+---------------------------------+
+        # | HTTP Method |                       URL                       |              Route              |
+        # +-------------+-------------------------------------------------+---------------------------------+
+        # | GET         | /api/v1/accounts/:accountId/features            | Feature::list_account_features  |
+        # | POST        | /api/v1/accounts/:accountId/features            | Feature::create_account_feature |
+        # | GET         | /api/v1/accounts/:accountId/features/:featureId | Feature::read_account_feature   |
+        # | PUT         | /api/v1/accounts/:accountId/features/:featureId | Feature::update_account_feature |
+        # | DELETE      | /api/v1/accounts/:accountId/features/:featureId | Feature::delete_account_feature |
+        # +-------------+-------------------------------------------------+---------------------------------+
+        
+        $routes->rest_routes( name => 'Product', under => 'Account', types => [qw(FTP SSH)] );
+        
+        # Installs following routes:    
+        # +-------------+------------------------------------------+--------------------------------------+
+        # | HTTP Method |                   URL                    |                Route                 |
+        # +-------------+------------------------------------------+--------------------------------------+
+        # | GET         | /api/v1/accounts/:accountId/products     | Product::list_account_products       |
+        # | POST        | /api/v1/accounts/:accountId/products     | Product::create_account_product      |
+        # | GET         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::read_account_product   |
+        # | PUT         | /api/v1/accounts/:accountId/products/FTP | Product::FTP::update_account_product |
+        # | DELETE      | /api/v1/accounts/:accountId/products/FTP | Product::FTP::delete_account_product |
+        # | GET         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::read_account_product   |
+        # | PUT         | /api/v1/accounts/:accountId/products/SSH | Product::SSH::update_account_product |
+        # | DELETE      | /api/v1/accounts/:accountId/products/SSH | Product::SSH::delete_account_product |
+        # +-------------+------------------------------------------+--------------------------------------+
 
 DESCRIPTION
 
@@ -128,15 +128,19 @@ PLUGIN OPTIONS
       If present, given HTTP to CRUD mapping will be used to determine
       method names. Default mapping:
 
-              get     ->  read
-              post    ->  create
-              put     ->  update
-              delete  ->  delete
-              list    ->  list
+          get     ->  read
+          post    ->  create
+          put     ->  update
+          delete  ->  delete
+          list    ->  list
 
 AUTHOR
 
     Abhishek Shende <abhishekisnot@gmail.com>
+
+CONTRIBUTOR
+
+    Vincent HETRU <vincent.hetru@13pass.com>
 
 COPYRIGHT AND LICENSE
 
