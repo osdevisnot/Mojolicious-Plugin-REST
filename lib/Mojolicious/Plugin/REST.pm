@@ -370,7 +370,7 @@ If present, this value will be added as prefix to all routes created.
 
 If present, this value will be added as prefix to all routes created but after prefix.
 
-=item htt2crud
+=item http2crud
 
 If present, given HTTP to CRUD mapping will be used to determine method names. Default mapping:
 
