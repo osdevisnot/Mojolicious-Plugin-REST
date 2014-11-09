@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::REST;
 
 # ABSTRACT: Mojolicious Plugin for RESTful operations
-# VERSION
+our $VERSION = '0.006'; # VERSION
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Exception;
 use Lingua::EN::Inflect 1.895 qw/PL/;
@@ -83,8 +83,11 @@ sub register {
 
             # under setting
             my $under_name = $params->{under};
+            my $under_controller = $params->{under_controller};
+
             my ( $under_name_lower, $under_name_plural, $under_id );
             if ( defined($under_name) and $under_name ne '' ) {
+                Mojo::Exception->throw('Under name was given but no controller name for it.') unless defined $params->{under_controller};
                 $under_name_lower  = lc $under_name;
                 $under_name_plural = PL( $under_name_lower, 10 );
                 $under_id          = ":" . $under_name_lower . "Id";
@@ -110,7 +113,7 @@ sub register {
                 my $action = $http2crud->{collection}->{$collection_method} . $action_suffix;
 
                 if ( defined($under_name) ) {
-                    my $bridge_controller = ucfirst($under_name_lower);
+                    my $bridge_controller = $under_controller;
                     my $bridge
                         = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
                         ->name("${bridge_controller}::${method_chained}()")
@@ -154,7 +157,7 @@ sub register {
                     my $action = $http2crud->{resource}->{$resource_method} . $action_suffix;
 
                     if ( defined($under_name) ) {
-                        my $bridge_controller = ucfirst($under_name_lower);
+                        my $bridge_controller = $under_controller;
                         my $bridge
                             = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
                             ->name("${bridge_controller}::${method_chained}()")
@@ -181,6 +184,14 @@ sub register {
 __END__
 
 =pod
+
+=head1 NAME
+
+Mojolicious::Plugin::REST - Mojolicious Plugin for RESTful operations
+
+=head1 VERSION
+
+version 0.006
 
 =head1 SYNOPSIS
 
@@ -276,17 +287,17 @@ Following options can be used to control route creation:
 =item methods
 
 This option can be used to control which methods are created for declared rest_route. Each character in the value of this option,
-determines if corresponding route will be created or ommited. For Example:
+determined if corresponding route will be created or ommited. For Example:
 
     $routes->rest_routes( name => 'Account', methods => 'crudl' );
 
-This will install all the rest routes, value C<crudl> signifies:
+This will install all the rest routes, value 'crudl' signifies:
 
     c - create
     r - read
     u - update
     d - delete
-    l - list
+    l - list.
 
 Only methods whose first character is mentioned in the value for this option will be created. For Example:
 
@@ -298,9 +309,7 @@ This will install only create, read and delete routes as below:
     # /api/v1/accounts/:accountId  ....  DELETE  "Account::delete_account()"  ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
     # /api/v1/accounts/:accountId  ....  GET     "Account::read_account()"    ^/api/v1/accounts/([^\/\.]+)(?:\.([^/]+)$)?
 
-
-Option value C<crd> signifies:
-
+option value 'crd' signifies,
     c - create,
     r - read,
     d - delete
@@ -327,11 +336,11 @@ If customized, this options needs a full namespace of the controller class.
 =item under
 
 This option can be used for associations. If present, url's for named resource will be created under given under resource. The actions created,
-will be bridged under C<method_chained> method of given under resouce. For Example:
+will be bridged under 'method_chained' method of given under resouce. For Example:
 
     $routes->rest_routes( name => 'Feature', under => 'Account' );
 
-This will create following routes, where routes for feature are bridged under C<Account::chained()>
+    # will create following routes, where routes for feature are bridged under Account::chained()
 
     # /api/v1/accounts/:accountId/features             B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features
     #   +/                                             ....  GET     "Feature::list_account_feature()"    ^(?:\.([^/]+)$)?
@@ -346,7 +355,6 @@ This will create following routes, where routes for feature are bridged under C<
 
 Note that, The actual bridge code needs to return a true value or the dispatch chain will be broken. Please refer
 L<Mojolicious Bridges Documentation|https://metacpan.org/pod/Mojolicious::Guides::Routing#Bridges> for more information on bridges in Mojolicious.
-
 
 =item types
 
@@ -370,7 +378,7 @@ If present, this value will be added as prefix to all routes created.
 
 If present, this value will be added as prefix to all routes created but after prefix.
 
-=item http2crud
+=item htt2crud
 
 If present, given HTTP to CRUD mapping will be used to determine method names. Default mapping:
 
@@ -388,3 +396,20 @@ If present, given HTTP to CRUD mapping will be used to determine method names. D
     }
 
 =back
+
+=head1 AUTHOR
+
+Abhishek Shende <abhishekisnot@gmail.com>
+
+=head1 CONTRIBUTOR
+
+Vincent HETRU <vincent.hetru@13pass.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Abhishek Shende.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
