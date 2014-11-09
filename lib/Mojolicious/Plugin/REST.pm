@@ -83,8 +83,10 @@ sub register {
 
             # under setting
             my $under_name = $params->{under};
+            my $under_controller = $params->{under_controller};
             my ( $under_name_lower, $under_name_plural, $under_id );
             if ( defined($under_name) and $under_name ne '' ) {
+                Mojo::Exception->throw('Under name was given but no controller name for it.') unless defined $params->{under_controller};
                 $under_name_lower  = lc $under_name;
                 $under_name_plural = PL( $under_name_lower, 10 );
                 $under_id          = ":" . $under_name_lower . "Id";
@@ -110,7 +112,7 @@ sub register {
                 my $action = $http2crud->{collection}->{$collection_method} . $action_suffix;
 
                 if ( defined($under_name) ) {
-                    my $bridge_controller = ucfirst($under_name_lower);
+                    my $bridge_controller = $under_controller;
                     my $bridge
                         = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
                         ->name("${bridge_controller}::${method_chained}()")
@@ -154,7 +156,7 @@ sub register {
                     my $action = $http2crud->{resource}->{$resource_method} . $action_suffix;
 
                     if ( defined($under_name) ) {
-                        my $bridge_controller = ucfirst($under_name_lower);
+                        my $bridge_controller = $under_controller;
                         my $bridge
                             = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
                             ->name("${bridge_controller}::${method_chained}()")
