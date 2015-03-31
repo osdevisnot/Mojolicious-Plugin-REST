@@ -110,10 +110,10 @@ sub register {
                 my $action = $http2crud->{collection}->{$collection_method} . $action_suffix;
 
                 if ( defined($under_name) ) {
-                    my $bridge_controller = ucfirst($under_name_lower);
-                    my $bridge
-                        = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
-                        ->name("${bridge_controller}::${method_chained}()")
+                    my $under_controller = ucfirst($under_name_lower);
+                    my $under
+                        = $routes->under($url)->to( controller => $under_controller, action => $method_chained )
+                        ->name("${under_controller}::${method_chained}()")
                         ->route->via($collection_method)->to( controller => $controller, action => $action )
                         ->name("${controller}::${action}()");
                 }
@@ -154,10 +154,10 @@ sub register {
                     my $action = $http2crud->{resource}->{$resource_method} . $action_suffix;
 
                     if ( defined($under_name) ) {
-                        my $bridge_controller = ucfirst($under_name_lower);
-                        my $bridge
-                            = $routes->bridge($url)->to( controller => $bridge_controller, action => $method_chained )
-                            ->name("${bridge_controller}::${method_chained}()")
+                        my $under_controller = ucfirst($under_name_lower);
+                        my $under
+                            = $routes->under($url)->to( controller => $under_controller, action => $method_chained )
+                            ->name("${under_controller}::${method_chained}()")
                             ->route->via($resource_method)->to( controller => $controller, action => $action )
                             ->name("${controller}::${action}()");
 
@@ -344,9 +344,15 @@ This will create following routes, where routes for feature are bridged under C<
     # /api/v1/accounts/:accountId/features/:featureId  B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features/([^\/\.]+)
     #   +/                                             ....  PUT     "Feature::update_account_feature()"  ^(?:\.([^/]+)$)?
 
-Note that, The actual bridge code needs to return a true value or the dispatch chain will be broken. Please refer
-L<Mojolicious Bridges Documentation|https://metacpan.org/pod/Mojolicious::Guides::Routing#Bridges> for more information on bridges in Mojolicious.
+In Mojolicious version 5.X, the actual bridge code needs to return a true value or the dispatch chain will be broken. Please refer
+L<Mojolicious Bridges Documentation|https://metacpan.org/pod/release/JHTHORSEN/Mojolicious-5.17/lib/Mojolicious/Guides/Routing.pod#Bridges> for more information on bridges in Mojolicious.
+Since Mojolicious 6.0 removed the method C<bridge>, you should use C<under> prefered - indeed, the C<bridge> method has been marked B<deprecated> since
+L<Mojolicious 5.73|https://metacpan.org/source/SRI/Mojolicious-5.73/lib/Mojolicious/Routes/Route.pm>.
 
+    Mojo::Util::deprecated 'Mojolicious::Routes::Route::bridge is DEPRECATED in'
+        . ' favor of Mojolicious::Routes::Route::under';
+
+Please refer to the latest guides for C<under> method at L<Mojolicious Under Documentation|https://metacpan.org/pod/Mojolicious::Guides::Routing#Under>.
 
 =item types
 
