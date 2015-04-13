@@ -30,7 +30,7 @@ sub message {
     my $json = $self->stash('json');
 
     if ( defined( $json->{messages} ) ) {
-        push( $json->{messages}, { text => $message, severity => $severity } );
+        push( @{$json->{messages}}, { text => $message, severity => $severity } );
     }
     else {
         $json->{messages} = [ { text => $message, severity => $severity } ];
