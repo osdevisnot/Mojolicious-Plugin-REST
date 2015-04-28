@@ -346,6 +346,16 @@ This will create following routes, where routes for feature are bridged under C<
     # /api/v1/accounts/:accountId/features/:featureId  B...  *       "Account::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features/([^\/\.]+)
     #   +/                                             ....  PUT     "Feature::update_account_feature()"  ^(?:\.([^/]+)$)?
 
+You can provide a controller name to your under resource if you prefer a namespace which reflects your URIs. For example:
+
+    $routes->rest_routes( name => 'Feature', under => 'Account', under_controller => 'Account::Feature' );
+    
+This will create following routes:
+
+    # /api/v1/accounts/:accountId/features             B...  *       "Account::Feature::chained()"                 ^/api/v1/accounts/([^\/\.]+)/features
+    #   +/                                             ....  GET     "Account::Feature::list_account_feature()"    ^(?:\.([^/]+)$)?
+    # ...
+
 Note that, The actual bridge code needs to return a true value or the dispatch chain will be broken. Please refer
 L<Mojolicious Bridges Documentation|https://metacpan.org/pod/Mojolicious::Guides::Routing#Bridges> for more information on bridges in Mojolicious.
 
