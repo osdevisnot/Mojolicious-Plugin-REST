@@ -112,13 +112,13 @@ sub register {
                 if ( defined($under_name) ) {
                     my $under_controller = ucfirst($under_name_lower);
                     my $under
-                        = $routes->under($url)->to( controller => $under_controller, action => $method_chained )
+                        = $routes->under($url)->to( %{$params}, controller => $under_controller, action => $method_chained )
                         ->name("${under_controller}::${method_chained}()")
-                        ->route->via($collection_method)->to( controller => $controller, action => $action )
+                        ->route->via($collection_method)->to( %{$params}, controller => $controller, action => $action )
                         ->name("${controller}::${action}()");
                 }
                 else {
-                    $routes->route($url)->via($collection_method)->to( controller => $controller, action => $action )
+                    $routes->route($url)->via($collection_method)->to( %{$params}, controller => $controller, action => $action )
                         ->name("${controller}::${action}()");
 
                 }
@@ -156,14 +156,14 @@ sub register {
                     if ( defined($under_name) ) {
                         my $under_controller = ucfirst($under_name_lower);
                         my $under
-                            = $routes->under($url)->to( controller => $under_controller, action => $method_chained )
+                            = $routes->under($url)->to( %{$params}, controller => $under_controller, action => $method_chained )
                             ->name("${under_controller}::${method_chained}()")
-                            ->route->via($resource_method)->to( controller => $controller, action => $action )
+                            ->route->via($resource_method)->to( %{$params}, controller => $controller, action => $action )
                             ->name("${controller}::${action}()");
 
                     }
                     else {
-                        $routes->route($url)->via($resource_method)->to( controller => $controller, action => $action )
+                        $routes->route($url)->via($resource_method)->to( %{$params}, controller => $controller, action => $action )
                             ->name("${controller}::${action}()");
                     }
 
@@ -256,6 +256,7 @@ This module is still under development, and it's possible that things may change
 =head2 rest_routes
 
 A routes shortcut to easily add RESTful routes for a resource and associations.
+L<Mojolicious::Controller/Stash> values can be added to a route as default parameters.
 
 =head1 MOJOLICIOUS HOOKS
 
